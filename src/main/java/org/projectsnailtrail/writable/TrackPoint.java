@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -50,6 +51,14 @@ public class TrackPoint {
 	public boolean hasAccuracy() {
 		return hasAccuracy;
 	}
+	public void setGps(boolean isGps){
+		gps=isGps;
+	}
+	public boolean isGps(){
+		return gps;
+	}
+	private boolean gps=false;  //this is a temporary hack so I can keep track of location provider type until I come up with a better way of doing it
+	
 	private double latitude;
 	private double longitude;
 	private long timestamp;
@@ -92,7 +101,29 @@ public class TrackPoint {
 		
 	}
 	public String toString(){
-		return null;
+		StringBuilder sb = new StringBuilder(200);
+		if(hasTimestamp) {
+			sb.append(new Date(timestamp).toString());
+			sb.append('\n');
+		}
+		if(gps){
+			sb.append("GPS\n");
+		}else{
+			sb.append("NETWORK\n");
+		}
+		if(hasLatitude){
+			sb.append(latitude);
+			sb.append(", ");
+		}
+		if(hasLongitude){
+			sb.append(longitude);
+		}
+		if(hasAccuracy){
+			sb.append('\n');
+			sb.append(accuracy);
+		}
+		
+		return sb.toString();
 	}
 	
 	public static int convertDoubleToInt(double d){
