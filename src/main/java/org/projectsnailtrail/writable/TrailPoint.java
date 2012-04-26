@@ -9,126 +9,86 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class TrackPoint {
+public class TrailPoint {
+	
+	private boolean gps=false;  //this is a temporary hack so I can keep track of location provider type until I come up with a better way of doing it
+	
+	private int geoLatitude;
+	private int geoLongitude;
+	private long timestamp;
+	private int accuracy;
 
 	public double getLatitude() {
-		return latitude;
+		return convertIntToDouble(geoLatitude);
+	}
+	public int getLatitudeAsMicroDegrees() {
+		return convertIntToMicroDegrees(geoLatitude);
 	}
 	public void setLatitude(double latitude) {
-		hasLatitude=true;
-		this.latitude = latitude;
+		geoLatitude = convertDoubleToInt(latitude);
 	}
+
 	public double getLongitude() {
-		return longitude;
+		return convertIntToDouble(geoLongitude);
+	}
+	public int getLongitudeAsMicroDegrees(){
+		return convertIntToMicroDegrees(geoLongitude);
 	}
 	public void setLongitude(double longitude) {
-		hasLongitude=true;
-		this.longitude = longitude;
+		geoLongitude = convertDoubleToInt(longitude);
 	}
+
 	public long getTimestamp() {
 		return timestamp;
 	}
 	public void setTimestamp(long timestamp) {
-		hasTimestamp=true;
 		this.timestamp = timestamp;
 	}
+
 	public int getAccuracy() {
 		return accuracy;
 	}
 	public void setAccuracy(int accuracy) {
-		hasAccuracy=true;
 		this.accuracy = accuracy;
 	}
-	public boolean hasLatitude() {
-		return hasLatitude;
-	}
-	public boolean hasLongitude() {
-		return hasLongitude;
-	}
-	public boolean hasTimestamp() {
-		return hasTimestamp;
-	}
-	public boolean hasAccuracy() {
-		return hasAccuracy;
-	}
+
 	public void setGps(boolean isGps){
 		gps=isGps;
 	}
 	public boolean isGps(){
 		return gps;
 	}
-	private boolean gps=false;  //this is a temporary hack so I can keep track of location provider type until I come up with a better way of doing it
-	
-	private double latitude;
-	private double longitude;
-	private long timestamp;
-	private int accuracy;
-	private boolean hasLatitude;
-	private boolean hasLongitude;
-	private boolean hasTimestamp;
-	private boolean hasAccuracy;
-	private final static byte VERSION = 2;
 	
 	public void write(OutputStream os) throws IOException {
-		//one day I'll make this more efficient, for  now it'll just live as V1
-		//really the booleans only need a bit each instead of a byte, four bits would suffice for accuracy if I make it a logrythmic and version could probably be limited if need be
 		DataOutputStream dos = new DataOutputStream(os);
-		dos.writeByte(VERSION);
-		dos.writeBoolean(gps);
 		dos.writeInt(accuracy);
-		dos.writeInt(convertDoubleToInt(latitude));
-		dos.writeInt(convertDoubleToInt(longitude));
+		dos.writeInt(geoLatitude);
+		dos.writeInt(geoLongitude);
 		dos.writeLong(timestamp);
 		dos.flush(); //hmm, is it being a good citizen to do this here?
 	}
 	public void read(InputStream is) throws IOException {
 		DataInputStream dis = new DataInputStream(is);
-		byte version = dis.readByte();
-		if(version>VERSION) throw new IOException("Input contains a version of serialization that is higher than the current one supported: " + version + ">" + VERSION);
-		if(version==1){
-			hasAccuracy = dis.readBoolean();
-			hasLatitude = dis.readBoolean();
-			hasLongitude = dis.readBoolean();
-			hasTimestamp = dis.readBoolean();
-			if(hasAccuracy) accuracy = dis.readInt();
-			if(hasLatitude) latitude = convertIntToDouble(dis.readInt());
-			if(hasLongitude) longitude = convertIntToDouble(dis.readInt());
-			if(hasTimestamp) timestamp = dis.readLong();
-		}else if(version==2){
-			gps = dis.readBoolean();
-			hasAccuracy=true;
-			hasLatitude = true;
-			hasLongitude=true;
-			hasTimestamp=true;
-			accuracy = dis.readInt();
-			latitude = convertIntToDouble(dis.readInt());
-			longitude = convertIntToDouble(dis.readInt());
-			timestamp = dis.readLong();
-		}
-		
+		accuracy = dis.readInt();
+		geoLatitude = dis.readInt();
+		geoLongitude = dis.readInt();
+		timestamp = dis.readLong();
 	}
+		
 	public String toString(){
 		StringBuilder sb = new StringBuilder(200);
-		if(hasTimestamp) {
-			sb.append(new Date(timestamp).toString());
-			sb.append('\n');
-		}
+		sb.append(new Date(timestamp).toString());
+		sb.append('\n');
 		if(gps){
 			sb.append("GPS\n");
 		}else{
 			sb.append("NETWORK\n");
 		}
-		if(hasLatitude){
-			sb.append(latitude);
-			sb.append(", ");
-		}
-		if(hasLongitude){
-			sb.append(longitude);
-		}
-		if(hasAccuracy){
-			sb.append('\n');
-			sb.append(accuracy);
-		}
+		sb.append(getLatitude());
+		sb.append(", ");
+		sb.append(getLongitude());
+		sb.append('\n');
+		sb.append(accuracy);
 		
 		return sb.toString();
 	}
@@ -152,20 +112,23 @@ public class TrackPoint {
 		return -(((double)i)/Integer.MIN_VALUE * 180);
 		
 	}
-	public static Iterable<TrackPoint> iterate(final InputStream is){
-		return new Iterable<TrackPoint>(){
+	public static int convertIntToMicroDegrees(int internal){
+		return (int)(convertIntToDouble(internal)*1000000);
+	}
+	public static Iterable<TrailPoint> iterate(final InputStream is){
+		return new Iterable<TrailPoint>(){
 
 			@Override
-			public Iterator<TrackPoint> iterator() {
+			public Iterator<TrailPoint> iterator() {
 				
-				return new Iterator<TrackPoint>() {
+				return new Iterator<TrailPoint>() {
 					boolean more;
-					TrackPoint next;
+					TrailPoint next;
 
 					@Override
 					public boolean hasNext() {
 						if(!more) {
-							next = new TrackPoint();
+							next = new TrailPoint();
 							try{
 								next.read(is);
 								more = true;
@@ -180,7 +143,7 @@ public class TrackPoint {
 					}
 
 					@Override
-					public TrackPoint next() {
+					public TrailPoint next() {
 						if(!more){
 							if(!hasNext()) throw new NoSuchElementException();
 						}
