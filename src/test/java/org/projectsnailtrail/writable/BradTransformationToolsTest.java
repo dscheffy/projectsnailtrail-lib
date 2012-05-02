@@ -30,14 +30,17 @@ public class BradTransformationToolsTest {
 		int oneThird = 0x55555555; //binary 01010101...
 		long interleave = interleave(latitude,longitude);
 		
-		assertEquals("x02468ACE and x13579BDF", interleave(latitude+oneThird,longitude+oneThird), shiftUpRight(interleave));
+		assertEquals("x02468ACE and x13579BDF right", interleave(latitude+oneThird,longitude+oneThird), shiftUpRight(interleave));
+		//shifting down and to the left should have the same effect as subtracting one third from each of the constituents
+		assertEquals("x02468ACE and x13579BDF left", interleave(latitude-oneThird,longitude-oneThird), shiftDownLeft(interleave));
 		assertEquals("shifting right should be reversible", interleave, shiftDownLeft(shiftUpRight(interleave)));
 		assertEquals("shifting left should be reversible", interleave, shiftUpRight(shiftDownLeft(interleave)));
 		
 		latitude = 0x0;
 		longitude = 0xFFFFFFFF;//FFFFFFFF;
 		interleave = interleave(latitude,longitude);
-		assertEquals("x00000000 and xFFFFFFFF", interleave(latitude+oneThird,longitude+oneThird), shiftUpRight(interleave));
+		assertEquals("x00000000 and xFFFFFFFF right", interleave(latitude+oneThird,longitude+oneThird), shiftUpRight(interleave));
+		assertEquals("x00000000 and xFFFFFFFF left", interleave(latitude-oneThird,longitude-oneThird), shiftDownLeft(interleave));
 		assertEquals("shifting right should be reversible", interleave, shiftDownLeft(shiftUpRight(interleave)));
 		assertEquals("shifting left should be reversible", interleave, shiftUpRight(shiftDownLeft(interleave)));
 
