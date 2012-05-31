@@ -1,4 +1,4 @@
-package org.projectsnailtrail.writable;
+package org.projectsnailtrail.tools;
 
 public class ConversionTools {
 	static int convertDegreesToBrad(double degrees){

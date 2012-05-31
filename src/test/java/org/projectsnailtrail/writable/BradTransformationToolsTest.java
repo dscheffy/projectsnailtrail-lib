@@ -3,7 +3,8 @@ package org.projectsnailtrail.writable;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import static org.projectsnailtrail.writable.BradTransformationTools.*;
+
+import static org.projectsnailtrail.tools.BradTransformationTools.*;
 
 public class BradTransformationToolsTest {
 

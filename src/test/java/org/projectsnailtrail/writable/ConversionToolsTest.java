@@ -3,7 +3,8 @@ package org.projectsnailtrail.writable;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import static org.projectsnailtrail.writable.ConversionTools.*;
+
+import static org.projectsnailtrail.tools.ConversionTools.*;
 
 public class ConversionToolsTest {
 
